@@ -1,0 +1,36 @@
+server:
+  port: 9527
+
+spring:
+  application:
+    name: cloud-gateway
+  cloud:
+    gateway:
+      discovery:
+        locator:
+          enabled: true  #开启注册中心路由功能. 多服务负载均很时使用,利用服务名进行路由
+      routes:
+        - id: payment_routh # 路由id,需唯一,没有固定规则,建议配合服务名石笋
+#          uri: http://localhost:8001 #路由匹配后请求的地址
+          uri: lb://cloud-payment-service #此处如果有问题，请注意依赖spring-cloud-starter-netflix-eureka-client依赖不能错
+          predicates:
+            - Path=/payment/getPaymentById/** # 路由规则
+        - id: payment_routh2
+#          uri: http://localhost:8001
+          uri: lb://cloud-payment-service
+          predicates:
+            - Path=/payment/lb/**
+            - After=2020-03-16T08:48:02.960+08:00[Asia/Shanghai]  #表示在predicates路由匹配时,在After这个时间之后,该路由才会生效
+#            - Before=2021-03-16T08:48:02.960+08:00[Asia/Shanghai] #指定时间之前,该路由才会匹配
+#            - Between=2020-03-16T08:48:02.960+08:00[Asia/Shanghai],2021-03-16T08:48:02.960+08:00[Asia/Shanghai] #指定时间之间,该路由才会匹配
+#            - Cookie=username,may #表示访问必须带key为username,value为may的cookie,路由才会匹配 // curl localhost:9527/payment/lb --cookie "username=may"
+#            - Header=X-Request-Id, \d+ #请求头要有X-Request-Id属性,且值匹配正则 \d+ (匹配一个或多个整数) // curl localhost:9527/pament/lb -H "X-Request-Id:123"
+
+eureka:
+  instance:
+    hostname: cloud-gateway-service
+  client:
+    service-url:
+      register-with-eureka: true
+      fetch-registry: true
+      defaultZone: http://eureka7001.com:7001/eureka ,http://eureka7002.com:7002/eureka
